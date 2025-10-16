@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ANIME — Home</title>
+
+  <!-- Bootstrap for layout + icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- AOS (scroll animations) -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <!-- Font / Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b0710;
+      --accent:#ff4d9e;
+      --accent2:#6b8bff;
+      --glass: rgba(255,255,255,0.06);
+      --glass-2: rgba(255,255,255,0.03);
+      --card-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      --radius: 14px;
+    }
+
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#04020a 0%, #0b0710 60%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; color:#e9eefb; -webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+
+    /* NAVBAR */
+    nav.navbar {
+      background: transparent;
+      padding: 1rem 2rem;
+      position:fixed; top:0; left:0; right:0; z-index:1200;
+      backdrop-filter: blur(6px);
+    }
+    .brand { font-weight:800; letter-spacing:1px; font-size:1.2rem; display:flex; gap:.6rem; align-items:center; }
+    .brand .logo-dot { width:10px;height:10px;background:linear-gradient(45deg,var(--accent),var(--accent2));border-radius:50%;box-shadow:0 0 12px rgba(255,77,158,0.25) }
+    .nav-link { position:relative; padding:.4rem .6rem; color:rgba(255,255,255,0.85) }
+    .nav-link::after{ content:""; position:absolute; left:10%; bottom:-6px; height:2px; width:0; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .28s ease }
+    .nav-link:hover::after{ width:80% }
+
+    .btn-cta { background: linear-gradient(90deg,var(--accent),var(--accent2)); color: #081025; font-weight:700; border-radius:40px; padding:.5rem 1rem; box-shadow: 0 8px 26px rgba(107,139,255,0.12); border:none; }
+
+    /* HERO */
+    .hero {
+      min-height:100vh;
+      display:grid;
+      grid-template-columns: 1fr 520px;
+      gap:2rem;
+      align-items:center;
+      padding:120px 6%;
+      position:relative;
+      overflow:hidden;
+    }
+
+    /* dark glass card left */
+    .hero-left {
+      max-width:780px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: var(--radius);
+      padding:36px;
+      box-shadow:var(--card-shadow);
+      border:1px solid rgba(255,255,255,0.03);
+      transform-origin:left center;
+    }
+    .hero h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin:0 0 .6rem; line-height:1.02; font-weight:800; background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; color:transparent }
+    .hero p { margin:0 0 1rem; color:rgba(233,238,251,0.8) }
+
+    .tags { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:1rem }
+    .tag { background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); padding:.5rem .8rem; border-radius:999px; font-size:.85rem; color: #d9e3ff; border:1px solid rgba(255,255,255,0.03) }
+
+    /* RIGHT: 3D canvas holder */
+    .hero-canvas-wrap {
+      width:100%; height:520px; border-radius:18px; overflow:hidden; position:relative;
+      box-shadow: 0 18px 60px rgba(2,6,23,0.7);
+      border: 1px solid rgba(255,255,255,0.03);
+      background: linear-gradient(180deg, rgba(11,7,16,0.6), rgba(2,2,8,0.6));
+    }
+
+    /* particle overlay label */
+    .orbit-label {
+      position:absolute; left:24px; bottom:18px; font-weight:600; font-size:.9rem;
+      background:linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      padding:.45rem .7rem; border-radius:999px; border:1px solid rgba(255,255,255,0.03)
+    }
+
+    /* GALLERY */
+    .gallery {
+      padding: 8rem 6%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.0));
+      clip-path: polygon(0 0,100% 4%,100% 100%,0 100%);
+    }
+
+    .gallery .grid {
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:18px;
+    }
+
+    .card-thumb {
+      border-radius:12px; overflow:hidden; position:relative; cursor:pointer; transform: translateZ(0);
+      background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.05));
+      border:1px solid rgba(255,255,255,0.03);
+      transition: transform .35s cubic-bezier(.2,.9,.2,1), box-shadow .35s;
+      box-shadow: 0 8px 28px rgba(2,6,23,0.5);
+    }
+    .card-thumb img{ width:100%; height:280px; object-fit:cover; display:block; transition: transform .6s ease }
+    .card-thumb:hover{ transform: translateY(-8px) scale(1.02); box-shadow: 0 26px 60px rgba(2,6,23,0.6); }
+    .card-thumb .info {
+      position:absolute; left:12px; bottom:12px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.45), rgba(0,0,0,0.22));
+      padding:.6rem .9rem; border-radius:10px;
+    }
+    .card-thumb .info h6{ margin:0; font-size:.95rem; font-weight:700 }
+    .card-thumb .info p{ margin:0; font-size:.78rem; opacity:.8 }
+
+    /* FEATURED ROW */
+    .features { padding: 4rem 6%; display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
+    .feature-card { background: var(--glass-2); border-radius:12px; padding:18px; width:260px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 12px 40px rgba(2,6,23,0.45); transition: transform .28s, box-shadow .28s; }
+    .feature-card:hover{ transform: translateY(-12px) scale(1.02); box-shadow: 0 26px 70px rgba(2,6,23,0.6) }
+
+    /* MODAL (lightbox) */
+    .lightbox {
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:2000;
+      background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.75));
+      padding: 30px;
+    }
+    .lightbox .box { width:min(1100px,96%); background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; overflow:hidden; position:relative; }
+    .lightbox img { width:100%; height:auto; display:block }
+
+    /* CTA footer */
+    .cta-footer { padding:4rem 6%; display:flex; align-items:center; justify-content:space-between; gap:16px; background:transparent }
+    .subscribe { display:flex; gap:.6rem; align-items:center }
+
+    /* responsive */
+    @media (max-width: 1100px){
+      .hero{ grid-template-columns: 1fr; padding-top:140px; gap:1rem }
+      .hero-canvas-wrap{ height:420px; width:100% }
+      .gallery .grid{ grid-template-columns: repeat(2,1fr) }
+    }
+    @media (max-width:600px){
+      .hero-left{ padding:20px }
+      .card-thumb img{ height:200px }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <div class="d-flex align-items-center justify-content-between w-100">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand">
+          <div class="logo-dot"></div>
+          <div>ANIME</div>
+        </div>
+        <div class="ms-3 d-none d-md-block text-muted">Premium anime art & community</div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <a class="nav-link" href="#gallery">Gallery</a>
+        <a class="nav-link" href="#featured">Featured</a>
+        <a class="nav-link" href="#subscribe">Join</a>
+        <button class="btn btn-cta">Get Started</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <!-- left content -->
+    <div class="hero-left" data-aos="fade-right">
+      <h1>Enter the world of <span style="font-weight:900">Anime</span><br><small style="font-size:.6em; color:rgba(233,238,251,0.65)">— Curated art, immersive scenes & 3D experiences</small></h1>
+      <p>Discover exclusive illustrations, animated scenes, wallpapers and community-driven collections. Hover any art for quick actions — click to expand.</p>
+
+      <div class="tags">
+        <div class="tag">HD Wallpapers</div>
+        <div class="tag">Animated Scenes</div>
+        <div class="tag">3D Experiences</div>
+        <div class="tag">Premium Packs</div>
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:12px; align-items:center">
+        <button class="btn btn-cta" id="exploreBtn">Explore Gallery</button>
+        <button class="btn btn-outline-light" id="discoverBtn">Discover More</button>
+      </div>
+
+      <div style="margin-top:18px; color:rgba(233,238,251,0.75); font-size:.95rem">
+        <strong>Trending:</strong> Vaporwave packs, Cyber-samurai set, Neon cityscapes
+      </div>
+    </div>
+
+    <!-- right 3D canvas -->
+    <div class="hero-canvas-wrap" id="three-wrap" data-aos="zoom-in">
+      <!-- particles (tsParticles) will mount here -->
+      <div id="tsparticles" style="position:absolute; inset:0; z-index:1"></div>
+
+      <canvas id="three-canvas" style="width:100%; height:100%; display:block; position:relative; z-index:2"></canvas>
+
+      <div class="orbit-label">Live 3D Scene — rotate with mouse</div>
+    </div>
+  </header>
+
+  <!-- GALLERY -->
+  <section id="gallery" class="gallery">
+    <div class="container">
+      <h2 class="mb-4" data-aos="fade-up">Featured Gallery</h2>
+
+      <div class="grid">
+        <!-- many cards with anime sample images -->
+        <!-- Replace these image URLs with your own images for production -->
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1543168256-4188115761a0?auto=format&fit=crop&w=1200&q=80" alt="anime-1">
+          <div class="info"><h6>Neon Samurai</h6><p>$8 — Animated Loop</p></div>
+        </div>
+
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1508766206392-8bd5cf550d1b?auto=format&fit=crop&w=1200&q=80" alt="anime-2">
+          <div class="info"><h6>Storm Portal</h6><p>Free Pack</p></div>
+        </div>
+
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&w=1200&q=80" alt="anime-3">
+          <div class="info"><h6>Cherry Blossom Walk</h6><p>$4 — Wallpaper</p></div>
+        </div>
+
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1520975916495-9b5b6b89b6f6?auto=format&fit=crop&w=1200&q=80" alt="anime-4">
+          <div class="info"><h6>Moonlit Rooftops</h6><p>Premium</p></div>
+        </div>
+
+        <!-- second row -->
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80" alt="anime-5">
+          <div class="info"><h6>Cyber Alley</h6><p>$7 — Loop</p></div>
+        </div>
+
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1505682634904-d7c35f0b96a9?auto=format&fit=crop&w=1200&q=80" alt="anime-6">
+          <div class="info"><h6>Forest Spirit</h6><p>Free</p></div>
+        </div>
+
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80" alt="anime-7">
+          <div class="info"><h6>Retro Girl</h6><p>Bundle</p></div>
+        </div>
+
+        <div class="card-thumb" data-aos="flip-left" data-tilt data-tilt-scale="1.06">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1200&q=80" alt="anime-8">
+          <div class="info"><h6>Sky Ship</h6><p>$12 — 3D Scene</p></div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:28px">
+        <button class="btn btn-cta" id="moreBtn" data-aos="fade-up">Load More</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured -->
+  <section id="featured" class="features" data-aos="fade-up">
+    <div class="feature-card" data-aos="fade-right">
+      <h5>Animated Loops</h5>
+      <p>Ready-to-use 4k animated loops for backgrounds and VJ sets.</p>
+      <div style="margin-top:8px"><small class="text-muted">From $5</small></div>
+    </div>
+    <div class="feature-card" data-aos="fade-up">
+      <h5>3D Scenes</h5>
+      <p>Customizable 3D scenes exported for WebGL and Unity integration.</p>
+      <div style="margin-top:8px"><small class="text-muted">Procedural & stylized</small></div>
+    </div>
+    <div class="feature-card" data-aos="fade-left">
+      <h5>Exclusive Packs</h5>
+      <p>Premium asset packs including sprites, tilesets, and UI kits.</p>
+      <div style="margin-top:8px"><small class="text-muted">Limited release</small></div>
+    </div>
+  </section>
+
+  <!-- CTA / Subscribe -->
+  <section id="subscribe" class="cta-footer">
+    <div>
+      <h3>Join the <span style="background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; color:transparent">ANIME</span> community</h3>
+      <p class="text-muted">Get weekly drops, free packs and member-only scenes.</p>
+    </div>
+    <div class="subscribe">
+      <input id="emailInput" class="form-control" style="min-width:320px; border-radius:999px; padding:12px 18px" placeholder="your@email.com" />
+      <button class="btn btn-cta" id="subBtn">Subscribe</button>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <div class="box">
+      <div style="position:absolute; right:12px; top:12px; z-index:10">
+        <button class="btn btn-sm btn-light" id="lbClose"><i class="fa fa-times"></i></button>
+      </div>
+      <img id="lbImage" src="" alt="expanded">
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="padding:40px 6%; margin-top:30px">
+    <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:12px">
+      <div>
+        <div style="font-weight:800; font-size:1.1rem">ANIME</div>
+        <small class="text-muted">© 2025 Anime Studio</small>
+      </div>
+      <div style="display:flex; gap:14px; align-items:center">
+        <a href="#" class="text-muted"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="text-muted"><i class="fab fa-discord"></i></a>
+        <a href="#" class="text-muted"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LIBRARIES -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r157/three.min.js"></script>
+  <script src="https://unpkg.com/vanilla-tilt@1.7.3/dist/vanilla-tilt.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@3/tsparticles.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@3/dist/tsparticles.bundle.min.js"></script>
+
+  <script>
+    // ---------------------------
+    // Init AOS
+    // ---------------------------
+    AOS.init({ duration:900, once:true, easing:"cubic-bezier(.2,.8,.2,1)" });
+
+    // ---------------------------
+    // Initialize Vanilla Tilt on thumbnails
+    // ---------------------------
+    document.querySelectorAll('[data-tilt]').forEach(el=>{
+      VanillaTilt.init(el, {
+        max:12, speed:800, scale:1.02, glare:true, "max-glare":0.14
+      });
+    });
+
+    // ---------------------------
+    // Lightbox behavior
+    // ---------------------------
+    const lightbox = document.getElementById('lightbox');
+    const lbImage = document.getElementById('lbImage');
+    document.querySelectorAll('.card-thumb').forEach(card => {
+      card.addEventListener('click', e=>{
+        const img = card.querySelector('img').src;
+        lbImage.src = img;
+        lightbox.style.display = 'flex';
+        gsap.fromTo('.lightbox .box',{scale:0.96, opacity:0}, {scale:1, opacity:1, duration:0.45, ease:"back.out(1.2)"});
+      });
+    });
+    document.getElementById('lbClose').addEventListener('click', ()=> lightbox.style.display='none');
+    lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) lightbox.style.display='none' });
+
+    // ---------------------------
+    // Subscribe button (demo)
+    // ---------------------------
+    document.getElementById('subBtn').addEventListener('click', ()=>{
+      const email = document.getElementById('emailInput').value;
+      if(!email || !email.includes('@')) {
+        gsap.fromTo('#emailInput',{x:-6},{x:0,duration:.6, ease:"elastic.out(1,0.5)"});
+        return alert('Enter a valid email');
+      }
+      alert('Thanks — subscribed: ' + email);
+      document.getElementById('emailInput').value='';
+    });
+
+    // ---------------------------
+    // Load More (demo) - clones existing thumbs
+    // ---------------------------
+    document.getElementById('moreBtn').addEventListener('click', ()=>{
+      const grid = document.querySelector('.gallery .grid');
+      const nodes = Array.from(document.querySelectorAll('.card-thumb'));
+      // clone 4 random cards
+      for(let i=0;i<4;i++){
+        const idx = (Math.random()*nodes.length)|0;
+        const clone = nodes[idx].cloneNode(true);
+        grid.appendChild(clone);
+        VanillaTilt.init(clone,{max:12, speed:800, scale:1.02, glare:true, "max-glare":0.14});
+        gsap.fromTo(clone,{opacity:0,y:26, scale:.98},{opacity:1,y:0, scale:1, duration:.7, ease:"power3.out"});
+        // reattach lightbox click
+        clone.addEventListener('click', ()=>{ lbImage.src = clone.querySelector('img').src; lightbox.style.display='flex' });
+      }
+    });
+
+    // ---------------------------
+    // tsParticles background inside hero 3D area
+    // ---------------------------
+    tsParticles.load("tsparticles", {
+      fpsLimit: 60,
+      background: { color: "transparent" },
+      particles: {
+        number: { value: 45, density: { enable: true, area: 800 } },
+        color: { value: ["#ff4d9e","#6b8bff","#7ef6f0"] },
+        shape: { type: "circle" },
+        opacity: { value: 0.18 },
+        size: { value: { min: 1, max: 6 } },
+        move: { enable: true, speed: 0.9, outModes:{ default: "out" } },
+        links: { enable: true, distance: 120, opacity:0.04, color:"#ffffff" }
+      }
+    });
+
+    // ---------------------------
+    // Three.js basic scene: rotating torus + floating orbs
+    // ---------------------------
+    (function initThree(){
+      const canvasWrap = document.getElementById('three-wrap');
+      const canvas = document.getElementById('three-canvas');
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias:true, alpha:true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      const scene = new THREE.Scene();
+
+      // camera
+      const camera = new THREE.PerspectiveCamera(45, canvasWrap.clientWidth / canvasWrap.clientHeight, 0.1, 2000);
+      camera.position.set(0,0,40);
+
+      // lights
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
+      const pointA = new THREE.PointLight(0xff4d9e, 1.2, 200);
+      pointA.position.set(30,10,25);
+      scene.add(pointA);
+      const pointB = new THREE.PointLight(0x6b8bff, 1.1, 200);
+      pointB.position.set(-20,-10,15);
+      scene.add(pointB);
+
+      // torus
+      const torusGeo = new THREE.TorusGeometry(10, 2.8, 64, 120);
+      const torusMat = new THREE.MeshStandardMaterial({ 
+        color:0xffffff,
+        roughness:0.25,
+        metalness:0.7,
+        onBeforeCompile: shader => {}
+      });
+      const torus = new THREE.Mesh(torusGeo, torusMat);
+      torus.rotation.x = Math.PI * 0.23;
+      scene.add(torus);
+
+      // inner glow using second mesh (slightly scaled)
+      const inner = new THREE.Mesh(new THREE.TorusGeometry(9.6, 1.6, 64, 120), new THREE.MeshBasicMaterial({ color:0xff4d9e, opacity:.12, transparent:true }));
+      scene.add(inner);
+
+      // floating orbs
+      const orbs = new THREE.Group();
+      for(let i=0;i<20;i++){
+        const g = new THREE.SphereGeometry( Math.random()*0.6 + 0.2, 16, 16 );
+        const m = new THREE.MeshStandardMaterial({ color: (i%2?0xff4d9e:0x6b8bff), roughness:0.3, metalness:0.6, transparent:true, opacity:0.85 });
+        const s = new THREE.Mesh(g,m);
+        s.position.set((Math.random()-0.5)*40, (Math.random()-0.5)*20, (Math.random()-0.5)*20);
+        s.userData = { vel: (Math.random()*0.02)+0.005 };
+        orbs.add(s);
+      }
+      scene.add(orbs);
+
+      // responsive
+      function resize(){
+        const w = canvasWrap.clientWidth;
+        const h = canvasWrap.clientHeight;
+        camera.aspect = w/h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w,h);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      // interaction: rotate torus with mouse
+      let mouseX = 0, mouseY=0;
+      window.addEventListener('mousemove', e=>{
+        const rect = canvasWrap.getBoundingClientRect();
+        mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouseY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      });
+
+      // animate
+      function animate(){
+        requestAnimationFrame(animate);
+        // torus rotation
+        torus.rotation.y += 0.007 + Math.abs(mouseX)*0.005;
+        torus.rotation.x += 0.003 * (1+mouseY);
+
+        inner.rotation.y = torus.rotation.y * 1.12;
+
+        // orbs float
+        orbs.children.forEach(o=>{
+          o.position.y += Math.sin(performance.now()*0.001 * (o.userData.vel*60))*0.005;
+          o.position.x += Math.cos(performance.now()*0.001 * (o.userData.vel*40))*0.003;
+        });
+
+        // subtle camera parallax
+        camera.position.x += (mouseX*8 - camera.position.x) * 0.04;
+        camera.position.y += (mouseY*4 - camera.position.y) * 0.04;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      // pointer: drag rotates too (touch friendly)
+      let isDown=false, lastX=0, lastY=0;
+      canvasWrap.addEventListener('pointerdown', e=>{ isDown=true; lastX=e.clientX; lastY=e.clientY; canvasWrap.style.cursor='grabbing'; });
+      window.addEventListener('pointerup', ()=>{ isDown=false; canvasWrap.style.cursor='default' });
+      window.addEventListener('pointermove', e=>{
+        if(!isDown) return;
+        const dx = (e.clientX - lastX)*0.003;
+        const dy = (e.clientY - lastY)*0.003;
+        torus.rotation.y += dx;
+        torus.rotation.x += dy;
+        lastX = e.clientX; lastY = e.clientY;
+      });
+
+    })();
+
+    // ---------------------------
+    // small entrance animations with GSAP
+    // ---------------------------
+    gsap.from('.hero-left',{ opacity:0, x:-40, duration:.9, ease:'power3.out' });
+    gsap.from('.hero-canvas-wrap',{ opacity:0, y:40, duration:.9, delay:.15, ease:'power3.out' });
+    gsap.from('.card-thumb',{ opacity:0, y:30, stagger:0.06, duration:.7, ease:'power3.out' });
+
+    // smooth scroll to gallery
+    document.getElementById('exploreBtn').addEventListener('click', ()=> document.querySelector('#gallery').scrollIntoView({behavior:'smooth'}));
+    document.getElementById('discoverBtn').addEventListener('click', ()=> document.querySelector('#featured').scrollIntoView({behavior:'smooth'}));
+
+  </script>
+
+  <!-- Bootstrap bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
